@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from Config import DATA_DIR, MODEL_DIR, RESULTS_DIR, SEQ_LEN, GENERATED_DIR
+from Config import DATA_DIR, MODEL_DIR, RESULTS_DIR, SEQ_LEN, GENERATED_DIR, HIDDEN_SIZE_LSTM, DROPOUT
 from Step1_data import (load_annotations,load_tracks_and_spots,
                         filter_valid_trajectories, compute_features,
                         align_and_save_dataset, build_track_level_dataset)
@@ -99,8 +99,8 @@ for name, cfg in ablation_configs.items():
         result_path=result_path,
         seq_input_size=seq_input_size,
         track_input_size=track_input_size,
-        hidden_size=64,
-        dropout=0.0
+        hidden_size=HIDDEN_SIZE_LSTM,
+        dropout=DROPOUT
     )
 
     # Step3: shap analysis

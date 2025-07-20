@@ -36,9 +36,9 @@ y_encoded = torch.tensor(y_encoded, dtype=torch.long)
 X_train, X_temp, y_train, y_temp = train_test_split(X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded)
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp)
 
-train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=32, shuffle=True)
-val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=32)
-test_loader = DataLoader(TensorDataset(X_test, y_test), batch_size=32)
+train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=256, shuffle=True)
+val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=256)
+test_loader = DataLoader(TensorDataset(X_test, y_test), batch_size=256)
 
 # ===== Model =====
 class Attention(nn.Module):
@@ -68,12 +68,18 @@ class BiLSTMAttnModel(nn.Module):
         context, attn_weights = self.attn(lstm_out)
         return self.fc(context), attn_weights
 
-model = BiLSTMAttnModel(input_dim=FEATURE_LEN, hidden_dim=64, output_dim=3, dropout=0.3)
+#128, 32
+#64, 32
+#64, 16
+
+model = BiLSTMAttnModel(input_dim=FEATURE_LEN, hidden_dim=128, output_dim=3, dropout=0.5)
 class_weights = torch.tensor([1.0 / (y_encoded == i).sum().item() for i in range(3)])
 class_weights = class_weights / class_weights.sum()
+#class_weights[2] = 1.0
+print(class_weights)
 criterion = nn.CrossEntropyLoss(weight=class_weights)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=3)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, patience=10)
 
 # ===== Training =====
 def train_model():
@@ -81,7 +87,7 @@ def train_model():
     best_model = None
     train_losses, val_losses, val_accs = [], [], []
 
-    for epoch in range(1, 101):
+    for epoch in range(1, 250):
         model.train()
         train_loss = 0
         for Xb, yb in train_loader:
@@ -106,6 +112,7 @@ def train_model():
 
         val_loss /= len(val_loader)
         acc = correct / total
+        print(scheduler.get_last_lr())
         scheduler.step(val_loss)
 
         train_losses.append(train_loss)
@@ -119,7 +126,7 @@ def train_model():
             early_stop = 0
         else:
             early_stop += 1
-            if early_stop >= 10:
+            if early_stop >= 1002:
                 print("Early stopping triggered.")
                 break
 
@@ -165,7 +172,12 @@ def umap_plot(ctx_vecs, nei_para=15):
 
 # ===== Main =====
 if __name__ == "__main__":
-    if os.path.exists(MODEL_PATH):
+    import random
+    random.seed(0)
+    torch.manual_seed(0)
+    np.random.seed(0)
+    torch.cuda.manual_seed(0)
+    if os.path.exists(MODEL_PATH) and False:
         print("Loading existing model...")
         model.load_state_dict(torch.load(MODEL_PATH,weights_only=True))
         logs = np.load(f"{SEQ_RESULT_DIR}/training_logs.npz")

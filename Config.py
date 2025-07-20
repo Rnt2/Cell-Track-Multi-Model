@@ -1,8 +1,10 @@
 
 import os
 # ======= RUNNING SETTINGS =======
-SEQ_LEN = 20 # Choose from 20, 100, 360
-
+SEQ_LEN = 100 # Choose from 20, 100, 360
+HIDDEN_SIZE_LSTM = 128
+DROPOUT = 0.3
+EPOCHS = 400
 # ======= PATH =======
 
 # Upload this folder with original data files
@@ -50,3 +52,9 @@ TRACK_LEN = len(track_features) # = 12
 # Run Step1 if you haven't yet to generate the dataset, or any changes to the dataset.
 # Run Step2 once to train the track model.
 # Change SEQ_LEN to 20, 100, and 360, and run Step 3, 4 and 5 6 under each SEQ_LEN.
+import random
+random.seed(42)
+import numpy as np
+np.random.seed(42)
+import torch
+torch.manual_seed(42)

@@ -11,6 +11,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import shap
 import pandas as pd
+from Config import HIDDEN_SIZE_LSTM, DROPOUT
 
 # === model and variable import ===
 
@@ -31,7 +32,7 @@ def SHAP_UnifiedFusionModel(seq_length, features,track_features,model_save_path,
     # === load data and model  ===
     print("[STEP 1] Loading model and data...")
 
-    model = UnifiedFusionModel(seq_input_size=feature_length, track_input_size=track_feature_length, hidden_size=64, dropout=0.0).to(device)
+    model = UnifiedFusionModel(seq_input_size=feature_length, track_input_size=track_feature_length, hidden_size=HIDDEN_SIZE_LSTM, dropout=DROPOUT).to(device)
     model.load_state_dict(torch.load(model_save_path, map_location=device,weights_only=True))
     model.eval()
 

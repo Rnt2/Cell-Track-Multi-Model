@@ -11,7 +11,7 @@ save_dir = os.path.join(GENERATED_DIR, "feature_distribution")
 os.makedirs(save_dir, exist_ok=True)
 
 
-def plot_feature_distribution_by_label(feature_name, sem_table):
+def plot_feature_distribution_by_label(feature_name, sem_table, scaler=False):
     """
     Plot the mean and standard deviation of a given feature grouped by label.
 
@@ -26,7 +26,10 @@ def plot_feature_distribution_by_label(feature_name, sem_table):
         raise ValueError(f"Invalid feature name: {feature_name}. Must be one of: {valid_features}")
 
     # Load unnormalized data
-    csv_file = "unscaled_track_features.csv" if is_track_level else "unscaled_spot_features.csv"
+    if scaler:
+        csv_file = "track_dataset.csv" if is_track_level else "trajectory_dataset_20.csv"
+    else:
+        csv_file = "unscaled_track_features.csv" if is_track_level else "unscaled_spot_features.csv"
     df = pd.read_csv(os.path.join(GENERATED_DIR, csv_file))
 
     if feature_name not in df.columns or 'LABEL' not in df.columns:
