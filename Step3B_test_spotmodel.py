@@ -43,7 +43,8 @@ class BiLSTMAttnModel(nn.Module):
         return self.fc(context), attn_weights
 
 # ==== Load External Test Dataset ====
-TEST_PATH = f"{GENERATED_DIR}/cart_test_trajectory_{SEQ_LEN}.npz"
+model_path= f"{MODEL_DIR}/loso_train_L0.5_track_NYU358_XY3_L1.0_track_NCI2_XY5_L0.0_pdo_Device5_XY7_100.pth"
+TEST_PATH = f"{GENERATED_DIR}/loso_test_L0.5_track_NYU358_XY3_L1.0_track_NCI2_XY5_L0.0_pdo_Device5_XY7_100.npz"
 data = np.load(TEST_PATH,allow_pickle=True)
 X_test, y_test_raw, track_ids = data["X"], data["y"], data["track_ids"]
 
@@ -62,8 +63,9 @@ y_test = torch.tensor(y_test, dtype=torch.long)
 test_loader = DataLoader(TensorDataset(X_test, y_test), batch_size=256)
 
 # ==== Load Model ====
+
 model = BiLSTMAttnModel(input_dim=FEATURE_LEN, hidden_dim=128, output_dim=3, dropout=0.5)
-model.load_state_dict(torch.load(f"{MODEL_DIR}/model_best_{SEQ_LEN}.pth"))
+model.load_state_dict(torch.load(model_path))
 model.eval()
 
 # ==== Evaluate ====
@@ -77,7 +79,7 @@ with torch.no_grad():
         attns.extend(att.numpy())
 
 # ==== Report ====
-print("📊 External Test Accuracy:", accuracy_score(y_true, y_pred))
+print("External Test Accuracy:", accuracy_score(y_true, y_pred))
 print(classification_report(y_true, y_pred))
 
 # ==== Confusion Matrix ====
@@ -109,4 +111,4 @@ df_out = pd.DataFrame({
     "Pred_Label": y_pred
 })
 df_out.to_csv(f"{SEQ_RESULT_DIR}/ext_test_predictions.csv", index=False)
-print("✅ Saved test prediction results.")
+print("Saved test prediction results.")

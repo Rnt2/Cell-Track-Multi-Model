@@ -38,16 +38,14 @@ features = [ # Time-based Features
 ]
 
 track_features = [ # Track-Level Statistics Features
-    "TRACK_DURATION", "TRACK_DISPLACEMENT", "TRACK_MEAN_SPEED",
-    "TRACK_MAX_SPEED", "TRACK_MIN_SPEED", "TRACK_STD_SPEED",
-    "TOTAL_DISTANCE_TRAVELED", "MAX_DISTANCE_TRAVELED", "CONFINEMENT_RATIO",
-    "MEAN_STRAIGHT_LINE_SPEED", "LINEARITY_OF_FORWARD_PROGRESSION",
+    "TRACK_DISPLACEMENT", 
+    "TOTAL_DISTANCE_TRAVELED", "CONFINEMENT_RATIO",
     "MEAN_DIRECTIONAL_CHANGE_RATE"
 ]
 
 # ======= CONSTANTS =======
 FEATURE_LEN = len(features) # = 9
-TRACK_LEN = len(track_features) # = 12
+TRACK_LEN = len(track_features) # = 3
 
 # Run Step1 if you haven't yet to generate the dataset, or any changes to the dataset.
 # Run Step2 once to train the track model.
