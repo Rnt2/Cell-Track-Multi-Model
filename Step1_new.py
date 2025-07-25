@@ -196,7 +196,48 @@ def create_loso_trials(spots_df, features, generated_dir, seq_len=100, random_se
     save_spot_sequence_dataset(test_df, features, generated_dir, seq_len, output_prefix=f"loso_test_{postfix}", save_csv=False)
 
     print(f"[LOSO] Total train: {len(train_df)} | test: {len(test_df)}")
+def save_track_level_dataset(tracks_df, feature_columns, generated_dir,
+                              output_prefix="track_dataset", save_csv=True):
+    print(f"[INFO] Saving track-level dataset: {output_prefix}")
 
+    records = []
+
+    for prefix, group_df in tracks_df.groupby("PREFIX"):
+        scaler = StandardScaler()
+        valid_feats = group_df.dropna(subset=feature_columns)
+        if valid_feats.empty:
+            continue
+
+        scaled = scaler.fit_transform(valid_feats[feature_columns])
+        valid_feats = valid_feats.reset_index(drop=True)  # ensure i matches row
+
+        for i, row in valid_feats.iterrows():
+            record = {
+                "PREFIX": row["PREFIX"],
+                "TRACK_ID": row["TRACK_ID"],
+                "LABEL": row["LABEL"],
+                "SOURCE": row["SOURCE"]
+            }
+            for j, feat_name in enumerate(feature_columns):
+                record[feat_name] = scaled[i][j]
+            records.append(record)
+
+    df_out = pd.DataFrame(records)
+
+    X = df_out[feature_columns].values
+    y = df_out["LABEL"].values
+    track_ids = df_out[["PREFIX", "TRACK_ID", "SOURCE"]].values  # include SOURCE
+
+    # Save .npz
+    out_npz = os.path.join(generated_dir, f"{output_prefix}.npz")
+    np.savez(out_npz, X=X, y=y, track_ids=track_ids)
+    print(f"[SAVE] .npz saved: {out_npz} | Shape: {X.shape}")
+
+    # Save .csv (optional)
+    if save_csv:
+        out_csv = os.path.join(generated_dir, f"{output_prefix}.csv")
+        df_out.to_csv(out_csv, index=False)
+        print(f"[SAVE] .csv saved: {out_csv} | Total rows: {len(df_out)}")
 if __name__ == "__main__":
     from Config import DATA_DIR, GENERATED_DIR, features, SEQ_LEN
 
@@ -240,3 +281,11 @@ if __name__ == "__main__":
         generated_dir=GENERATED_DIR,
         seq_len=SEQ_LEN
     )'''
+    from Config import track_features  # 确保 Config.py 中定义了 track_features
+
+    save_track_level_dataset(
+        tracks_df=merged_tracks_df,
+        feature_columns=track_features,
+        generated_dir=GENERATED_DIR,
+        output_prefix="track_dataset"
+    )

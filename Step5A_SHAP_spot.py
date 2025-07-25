@@ -42,7 +42,7 @@ class WrappedModel(torch.nn.Module):
         logits, _ = self.base(x)
         return logits
 
-model = BiLSTMAttnModel(input_dim=FEATURE_LEN, hidden_dim=64, output_dim=3, dropout=0.3)
+model = BiLSTMAttnModel(input_dim=FEATURE_LEN, hidden_dim=128, output_dim=3, dropout=0.3)
 model.load_state_dict(torch.load(MODEL_PATH))
 model.eval()
 wrapped_model = WrappedModel(model)

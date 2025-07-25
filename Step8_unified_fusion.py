@@ -28,6 +28,9 @@ def load_and_align_data(seq_path, track_path):
 
     X_seq, y_seq, track_ids_seq = seq_data['X'], seq_data['y'], seq_data['track_ids']
     X_track, y_track, track_ids_track = track_data['X'], track_data['y'], track_data['track_ids']
+    print("[DEBUG] Example seq track_id:", track_ids_seq[0], type(track_ids_seq[0]))
+    print("[DEBUG] Example track track_id:", track_ids_track[0], type(track_ids_track[0]))
+    print("[DEBUG] Unique shapes:", np.shape(track_ids_seq[0]), np.shape(track_ids_track[0]))
 
     if X_seq.shape[1] == 11 and X_seq.shape[2] == 20:
         print("transposing...")
@@ -135,9 +138,9 @@ def Train_UnifiedFusionModel(seq_path, track_path, model_save_path, result_path,
 
     model = UnifiedFusionModel(seq_input_size=seq_input_size, track_input_size=track_input_size,
                                hidden_size=hidden_size, dropout=dropout).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.CrossEntropyLoss(weight=weights)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, patience=10)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, patience=10)
 
     print("[STEP 2] Training unified fusion model...")
     best_acc, early_stop = 0, 0
@@ -284,15 +287,15 @@ def Test_UnifiedFusionModel(seq_path, track_path, model_path, output_dir="Result
     }
 
 if __name__ == "__main__":
-    from Config import GENERATED_DIR, SEQ_LEN, MODEL_DIR, SEQ_RESULT_DIR
+    from Config import GENERATED_DIR, SEQ_LEN, MODEL_DIR, SEQ_RESULT_DIR,TRACK_LEN,FEATURE_LEN
     SEQ_DATA_PATH = f"{GENERATED_DIR}/trajectory_dataset_{SEQ_LEN}.npz"
     TRACK_DATA_PATH = f"{GENERATED_DIR}/track_dataset.npz"
     MODEL_SAVE_PATH = f"{MODEL_DIR}/unified_fusion_model.pth"
     os.makedirs(SEQ_RESULT_DIR, exist_ok=True)
-    Train_UnifiedFusionModel(SEQ_DATA_PATH, TRACK_DATA_PATH, MODEL_SAVE_PATH, SEQ_RESULT_DIR)
+    Train_UnifiedFusionModel(SEQ_DATA_PATH, TRACK_DATA_PATH, MODEL_SAVE_PATH, SEQ_RESULT_DIR, track_input_size=TRACK_LEN, seq_input_size=FEATURE_LEN)
 
-    TEST_SEQ_DATA_PATH = f"{GENERATED_DIR}/cart_test_trajectory_{SEQ_LEN}.npz"
-    TEST_TRACK_DATA_PATH = f"{GENERATED_DIR}/cart_test_track.npz"
-    MODEL_PATH = os.path.join(MODEL_DIR, "unified_model_best.pth")
+    #TEST_SEQ_DATA_PATH = f"{GENERATED_DIR}/cart_test_trajectory_{SEQ_LEN}.npz"
+    #TEST_TRACK_DATA_PATH = f"{GENERATED_DIR}/cart_test_track.npz"
+    #MODEL_PATH = os.path.join(MODEL_DIR, "unified_model_best.pth")
 
-    Test_UnifiedFusionModel(TEST_SEQ_DATA_PATH, TEST_TRACK_DATA_PATH, MODEL_PATH, output_dir=SEQ_RESULT_DIR)
+    #Test_UnifiedFusionModel(TEST_SEQ_DATA_PATH, TEST_TRACK_DATA_PATH, MODEL_PATH, output_dir=SEQ_RESULT_DIR)
